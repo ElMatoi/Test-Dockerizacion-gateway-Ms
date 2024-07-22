@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ms-user
+      - gateway-db
+    environment:
+      - MONGODB_URI=mongodb://gateway-db:27017/gateway
+
+  ms-user:
+    build: ./ms-user
+    ports:
+      - "3001:3000"
+    depends_on:
+      - ms-user-db
+    environment:
+      - MONGODB_URI=mongodb://ms-user-db:27017/ms-user
+
+  gateway-db:
+    image: mongo:latest
+    volumes:
+      - gateway-db-data:/data/db
+
+  ms-user-db:
+    image: mongo:latest
+    volumes:
+      - ms-user-db-data:/data/db
+
+volumes:
+  gateway-db-data:
+  ms-user-db-data:
