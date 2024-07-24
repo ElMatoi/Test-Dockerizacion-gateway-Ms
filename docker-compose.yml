@@ -1,35 +1,38 @@
-version: '3'
+version: '3.7'
 
 services:
   gateway:
-    build: ./gateway
+    build:
+      context: ./gateway
     ports:
       - "3000:3000"
+    environment:
+      - USER_SERVICE_URI=http://ms-user:3001
     depends_on:
       - ms-user
-      - gateway-db
-    environment:
-      - MONGODB_URI=mongodb://gateway-db:27017/gateway
+    networks:
+      - blackcat-network
 
   ms-user:
-    build: ./ms-user
+    build:
+      context: ./ms-user
     ports:
-      - "3001:3000"
-    depends_on:
-      - ms-user-db
+      - "3001:3001"
     environment:
-      - MONGODB_URI=mongodb://ms-user-db:27017/ms-user
+      - MONGO_URI=mongodb://mongo:27017/users
+      - JWT_SECRET=your_secret_key
+    depends_on:
+      - mongo
+    networks:
+      - blackcat-network
 
-  gateway-db:
-    image: mongo:latest
-    volumes:
-      - gateway-db-data:/data/db
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - blackcat-network
 
-  ms-user-db:
-    image: mongo:latest
-    volumes:
-      - ms-user-db-data:/data/db
-
-volumes:
-  gateway-db-data:
-  ms-user-db-data:
+networks:
+  blackcat-network:
+    driver: bridge
